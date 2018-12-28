@@ -31,10 +31,10 @@ import code.ponfee.commons.http.ContentType;
 import code.ponfee.commons.io.Files;
 import code.ponfee.commons.model.Page;
 import code.ponfee.commons.model.PageRequestParams;
+import code.ponfee.commons.model.PaginationHtmlBuilder;
 import code.ponfee.commons.model.Result;
 import code.ponfee.commons.resource.ResourceLoaderFacade;
 import code.ponfee.commons.web.WebUtils;
-import code.ponfee.console.PaginationHtmlBuilder;
 
 /**
  * Database query http api
@@ -66,7 +66,9 @@ public class DatabaseQueryController {
 
     @GetMapping("page")
     public Result<Page<Object[]>> query4page(PageRequestParams params) {
-        return Result.success(convert(service.query4page(params)));
+        return Result.success(
+            service.query4page(params).transform(Collects::map2array)
+        );
     }
 
     // Oracle: select table_name from tabs
@@ -93,14 +95,15 @@ public class DatabaseQueryController {
         table.addRowsAndEnd(Collects.map2array(page.getRows()));
         try (HtmlExporter exporter = new HtmlExporter()) {
             exporter.build(table);
-            
-            
-            String html = PaginationHtmlBuilder.build(
-                "Database Query", PaginationHtmlBuilder.CDN_JQUERY,
-                buildForm(params), exporter.body(), 
-                contextPath  + "/db/query/view", page, params, "");
-            
-            WebUtils.response(resp, ContentType.TEXT_HTML.value(), html, Files.UTF_8);
+            PaginationHtmlBuilder builder = PaginationHtmlBuilder.newBuilder(
+                "Database Query", contextPath + "/db/query/view", page
+            );
+            builder.table(exporter.body())
+                   .scripts(PaginationHtmlBuilder.CDN_JQUERY)
+                   .form(buildForm(params))
+                   .params(params);
+
+            WebUtils.response(resp, ContentType.TEXT_HTML.value(), builder.build(), Files.UTF_8);
         } 
     }
 
@@ -123,7 +126,4 @@ public class DatabaseQueryController {
         return expect.equals(actual) ? " selected=\"selected\"" : "";
     }
 
-    private Page<Object[]> convert(Page<LinkedHashMap<String, Object>> page) {
-        return page.transform(Collects::map2array);
-    }
 }

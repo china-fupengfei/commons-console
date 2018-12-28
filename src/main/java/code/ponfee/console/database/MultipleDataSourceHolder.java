@@ -5,7 +5,9 @@ package code.ponfee.console.database;
  * 
  * @author Ponfee
  */
-public abstract class MultipleDataSourceHolder {
+public final class MultipleDataSourceHolder {
+
+    private MultipleDataSourceHolder() {}
 
     public final static String DEFAULT_DATASOURCE_NAME = "default";
 

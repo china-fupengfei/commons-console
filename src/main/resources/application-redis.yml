@@ -1,4 +1,6 @@
-redis:
+# 需要spring.redis为前缀，否则加载不到Redis配
+# 置，会默认连接的本地配置localhost:6379
+spring.redis:
   sentinel:
     master: REDIS_SENTINEL
     nodes: 112.74.170.75:16379,112.74.170.75:16380

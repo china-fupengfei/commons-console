@@ -1,4 +1,4 @@
-datasource:
+spring.datasource:
   #driver-class-name: com.mysql.cj.jdbc.Driver
   #url: jdbc:mysql://112.74.170.75:3306/spy_schedule_job?useUnicode=true&characterEncoding=UTF-8
   driver-class-name: net.sf.log4jdbc.DriverSpy

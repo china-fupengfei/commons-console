@@ -6,7 +6,7 @@ ENV WORK_PATH /home/app
 
 # --------APP---------
 # 项目jar名称
-ENV APP_NAME "spy-schedule-job-1.0-SNAPSHOT"
+ENV APP_NAME "commons-console-1.0-SNAPSHOT"
 
 # 项目参数
 ENV APP_PARAMS ""

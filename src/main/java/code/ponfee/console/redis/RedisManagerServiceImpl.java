@@ -6,6 +6,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutorCompletionService;
@@ -40,7 +41,6 @@ import code.ponfee.commons.model.PageBoundsResolver.PageBounds;
 import code.ponfee.commons.model.PageRequestParams;
 import code.ponfee.commons.util.Bytes;
 import code.ponfee.commons.util.Enums;
-import code.ponfee.commons.util.ObjectUtils;
 
 /**
  * Redis manager service implementation
@@ -136,7 +136,9 @@ public class RedisManagerServiceImpl implements RedisManagerService {
     public void addOrUpdateRedisEntry(String key, String value, Long expire, 
                                       String dataType, String valueType) {
         Object value0 = parseValue(value, valueType);
-        long expire0 = ObjectUtils.orElse(expire, (long) -1, n -> n != null && n > 0);
+        long expire0 = Optional.ofNullable(expire)
+                               .filter(n -> n != null && n > 0)
+                               .orElse(-1L);
         DataType type = parseDataType(key, dataType);
         switch (type) {
             case STRING:
@@ -220,8 +222,9 @@ public class RedisManagerServiceImpl implements RedisManagerService {
     }
 
     private DataType parseDataType(String key, String dataType) {
-        DataType actual = ObjectUtils.orElse(redis.type(key), DataType.STRING, 
-                                             this::isNotNull);
+        DataType actual = Optional.ofNullable(redis.type(key))
+                                  .filter(this::isNotNull)
+                                  .orElse(DataType.STRING);
         if (StringUtils.isEmpty(dataType)) {
             return actual;
         }
@@ -230,7 +233,9 @@ public class RedisManagerServiceImpl implements RedisManagerService {
             expect = DataType.fromCode(dataType);
         } catch (Exception e) {
         }
-        return ObjectUtils.orElse(expect, actual, this::isNotNull);
+        return Optional.ofNullable(expect)
+                       .filter(this::isNotNull)
+                       .orElse(actual);
     }
 
     private boolean isNotNull(DataType type) {
@@ -281,11 +286,12 @@ public class RedisManagerServiceImpl implements RedisManagerService {
     }
 
     private static enum ValueType {
-        RAW, B64() {
+        RAW, //
+        B64() {
             public @Override Object parse(String value) {
                 return StringUtils.isEmpty(value)
-                    ? Bytes.EMPTY_BYTES
-                    : Base64.getUrlDecoder().decode(value);
+                       ? Bytes.EMPTY_BYTES
+                       : Base64.getUrlDecoder().decode(value);
             }
         };
 

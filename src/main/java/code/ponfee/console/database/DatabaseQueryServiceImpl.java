@@ -28,15 +28,15 @@ public class DatabaseQueryServiceImpl implements DatabaseQueryService {
     @SuppressWarnings("unchecked")
     @Override
     public Page<LinkedHashMap<String, Object>> query4page(PageRequestParams params) {
-        String sql;
+        String sql, datasource;
         if (StringUtils.isBlank(sql = params.getString("sql"))) {
             return Page.of(Collections.emptyList());
         }
 
         PageHelper.startPage(params.getPageNum(), params.getPageSize());
         try {
-            if (StringUtils.isNotBlank(params.getString("datasource"))) {
-                MultipleDataSourceHolder.set(params.getString("datasource"));
+            if (StringUtils.isNotBlank(datasource = params.getString("datasource"))) {
+                MultipleDataSourceHolder.set(datasource);
             }
 
             List<?> list = sqlMapper.selectList(sql, LinkedHashMap.class);

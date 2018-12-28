@@ -26,11 +26,11 @@ import code.ponfee.commons.http.ContentType;
 import code.ponfee.commons.io.Files;
 import code.ponfee.commons.model.Page;
 import code.ponfee.commons.model.PageRequestParams;
+import code.ponfee.commons.model.PaginationHtmlBuilder;
 import code.ponfee.commons.model.Result;
 import code.ponfee.commons.model.ResultCode;
 import code.ponfee.commons.util.Enums;
 import code.ponfee.commons.web.WebUtils;
-import code.ponfee.console.PaginationHtmlBuilder;
 import code.ponfee.console.redis.RedisManagerServiceImpl.MatchMode;
 
 /**
@@ -66,11 +66,15 @@ public class RedisManagerController {
         table.addRowsAndEnd(Collects.flatList(page.getRows(), "key", "type", "expire"));
         try (HtmlExporter exporter = new HtmlExporter()) {
             exporter.build(table);
-            String html = PaginationHtmlBuilder.build(
-                "Redis Manager", PaginationHtmlBuilder.CDN_JQUERY,
-                buildForm(params), exporter.body(), 
-                contextPath  + "/redis/mgr/view", page, params, buildOthers());
-            WebUtils.response(resp, ContentType.TEXT_HTML.value(), html, Files.UTF_8);
+            PaginationHtmlBuilder builder = PaginationHtmlBuilder.newBuilder(
+                "Redis Manager", contextPath + "/redis/mgr/view", page
+            );
+            builder.table(exporter.body())
+                   .scripts(PaginationHtmlBuilder.CDN_JQUERY)
+                   .form(buildForm(params))
+                   .params(params)
+                   .foot(buildFoot());
+            WebUtils.response(resp, ContentType.TEXT_HTML.value(), builder.build(), Files.UTF_8);
         } 
     }
 
@@ -123,7 +127,7 @@ public class RedisManagerController {
             .toString();
     }
 
-    private String buildOthers() {
+    private String buildFoot() {
         return new StringBuilder(HtmlExporter.HORIZON)
             .append("<form method=\"POST\" name=\"delete\">")
             .append("<input type=\"text\" name=\"key\" />")
