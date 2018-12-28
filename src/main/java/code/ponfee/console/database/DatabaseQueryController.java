@@ -88,11 +88,13 @@ public class DatabaseQueryController {
                         : page.getRows().get(0).keySet().stream().toArray(String[]::new);
         AtomicInteger order = new AtomicInteger(1);
         List<Thead> heads = Arrays.stream(head).map(h -> new Thead(
-            h, order.getAndIncrement(), 0, new Tmeta(Type.CHAR, null, Align.LEFT, true, null)
+            h, order.getAndIncrement(), 0, 
+            new Tmeta(Type.CHAR, null, Align.LEFT, true, null)
         )).collect(Collectors.toList());
         Table table = new Table(heads);
         table.setComment(comment);
-        table.addRowsAndEnd(Collects.map2array(page.getRows()));
+        page.process(row -> table.addRow(Collects.map2array(row)));
+        table.end();
         try (HtmlExporter exporter = new HtmlExporter()) {
             exporter.build(table);
             PaginationHtmlBuilder builder = PaginationHtmlBuilder.newBuilder(
