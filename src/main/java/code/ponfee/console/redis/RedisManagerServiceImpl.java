@@ -55,11 +55,12 @@ public class RedisManagerServiceImpl implements RedisManagerService {
     private static final int BATCH_SIZE = 2000;
     private static final int REFRESH_THRESHOLD_MILLIS = 15000;
     private static final Lock LOCK = new ReentrantLock();
-    private static List<RedisKey> keys = new LinkedList<>();
+    // new CopyOnWriteArrayList<>();
+    private static List<RedisKey> keys = Collections.synchronizedList(new LinkedList<>());
     private static volatile long lastRefreshTime = 0;
 
     private @Resource RedisTemplate<String, Object> redis;
-    protected @Resource ThreadPoolTaskExecutor taskExecutor;
+    private @Resource ThreadPoolTaskExecutor taskExecutor;
 
     @Override
     public Page<RedisKey> query4page(PageRequestParams params) {
@@ -118,16 +119,20 @@ public class RedisManagerServiceImpl implements RedisManagerService {
             return Page.of(Collections.emptyList());
         }
 
-        PageBounds pageBounds = PageBoundsResolver.resolve(params.getPageNum(), params.getPageSize(), list.size());
-        List<RedisKey> data = list.subList((int) pageBounds.getOffset(), (int) pageBounds.getOffset() + pageBounds.getLimit());
+        PageBounds bounds = PageBoundsResolver.resolve(
+            params.getPageNum(), params.getPageSize(), list.size()
+        );
+        List<RedisKey> data = list.subList(
+            (int) bounds.getOffset(), (int) bounds.getOffset() + bounds.getLimit()
+        );
         com.github.pagehelper.Page<RedisKey> page = new com.github.pagehelper.Page<>(
-            (int) pageBounds.getOffset() / params.getPageSize() + 1, params.getPageSize()
+            (int) bounds.getOffset() / params.getPageSize() + 1, params.getPageSize()
         );
         page.addAll(data);
-        page.setPages((int) (pageBounds.getTotal() + params.getPageSize() - 1) / params.getPageSize());
-        page.setTotal(pageBounds.getTotal());
-        page.setStartRow((int) pageBounds.getOffset());
-        page.setEndRow((int) pageBounds.getOffset() + pageBounds.getLimit());
+        page.setPages((int) (bounds.getTotal() + params.getPageSize() - 1) / params.getPageSize());
+        page.setTotal(bounds.getTotal());
+        page.setStartRow((int) bounds.getOffset());
+        page.setEndRow((int) bounds.getOffset() + bounds.getLimit());
         return Page.of(page);
     }
 
@@ -148,8 +153,25 @@ public class RedisManagerServiceImpl implements RedisManagerService {
                     redis.opsForValue().set(key, value0);
                 }
                 break;
-            default:
+
+            case LIST:
+                // TODO
                 break;
+
+            case SET:
+                // TODO
+                break;
+
+            case ZSET:
+                // TODO
+                break;
+
+            case HASH:
+                // TODO
+                break;
+
+            default:
+                throw new UnsupportedOperationException("Unsupported redis type: " + type.name());
         }
         keys.remove(key);
         keys.add(new RedisKey(key, type, expire0));
@@ -189,7 +211,9 @@ public class RedisManagerServiceImpl implements RedisManagerService {
 
             AtomicInteger count = new AtomicInteger(0);
             redis.execute((RedisCallback<Void>) (conn -> {
-                Cursor<byte[]> cursor = conn.scan(new ScanOptionsBuilder().match("*").count(BATCH_SIZE).build());
+                Cursor<byte[]> cursor = conn.scan(
+                    new ScanOptionsBuilder().match("*").count(BATCH_SIZE).build()
+                );
                 List<byte[]> binaryKeys = new ArrayList<>(BATCH_SIZE);
                 for (int i = 0; cursor.hasNext(); i++) {
                     binaryKeys.add(cursor.next());
@@ -208,10 +232,10 @@ public class RedisManagerServiceImpl implements RedisManagerService {
             }));
 
             List<RedisKey> result = new LinkedList<>(); // count.get() * BATCH_SIZE
-            MultithreadExecutor.join(service, count.get(), result::addAll, 31);
+            MultithreadExecutor.join(service, count.get(), result::addAll);
 
             keys.clear();
-            keys = result;
+            keys = Collections.synchronizedList(result);
             lastRefreshTime = System.currentTimeMillis();
             logger.info("Redis manager refresh key cost time: {}", watch.stop());
         } catch (Throwable e) {

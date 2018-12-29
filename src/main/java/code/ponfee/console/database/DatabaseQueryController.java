@@ -1,6 +1,7 @@
 package code.ponfee.console.database;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +30,6 @@ import code.ponfee.commons.export.Tmeta;
 import code.ponfee.commons.export.Tmeta.Align;
 import code.ponfee.commons.export.Tmeta.Type;
 import code.ponfee.commons.http.ContentType;
-import code.ponfee.commons.io.Files;
 import code.ponfee.commons.model.Page;
 import code.ponfee.commons.model.PageRequestParams;
 import code.ponfee.commons.model.PaginationHtmlBuilder;
@@ -72,7 +73,7 @@ public class DatabaseQueryController {
     }
 
     // Oracle: select table_name from tabs
-    // Mysql: select table_name from  INFORMATION_SCHEMA.TABLES
+    //  Mysql: select table_name from  INFORMATION_SCHEMA.TABLES
     @GetMapping("view")
     public void query4view(PageRequestParams params, HttpServletResponse resp) {
         Page<LinkedHashMap<String, Object>> page;
@@ -83,18 +84,20 @@ public class DatabaseQueryController {
             page = Page.empty();
             comment = e.getMessage();
         }
-        String[] head = CollectionUtils.isEmpty(page.getRows()) 
-                        ? new String[] {"无查询结果"} 
-                        : page.getRows().get(0).keySet().stream().toArray(String[]::new);
+        Stream<String> head = CollectionUtils.isEmpty(page.getRows()) 
+                            ? Arrays.stream(new String[] { "无查询结果" })
+                            : page.getRows().get(0).keySet().stream();
         AtomicInteger order = new AtomicInteger(1);
-        List<Thead> heads = Arrays.stream(head).map(h -> new Thead(
+        List<Thead> heads = head.map(h -> new Thead(
             h, order.getAndIncrement(), 0, 
             new Tmeta(Type.CHAR, null, Align.LEFT, true, null)
         )).collect(Collectors.toList());
+
         Table table = new Table(heads);
         table.setComment(comment);
         page.process(row -> table.addRow(Collects.map2array(row)));
         table.end();
+
         try (HtmlExporter exporter = new HtmlExporter()) {
             exporter.build(table);
             PaginationHtmlBuilder builder = PaginationHtmlBuilder.newBuilder(
@@ -105,7 +108,8 @@ public class DatabaseQueryController {
                    .form(buildForm(params))
                    .params(params);
 
-            WebUtils.response(resp, ContentType.TEXT_HTML.value(), builder.build(), Files.UTF_8);
+            WebUtils.response(resp, ContentType.TEXT_HTML, 
+                              builder.build(), StandardCharsets.UTF_8);
         } 
     }
 

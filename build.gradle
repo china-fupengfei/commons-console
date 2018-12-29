@@ -1,10 +1,9 @@
 buildscript {
     def springBootVersion = '1.5.18.RELEASE'
     repositories {
-        //maven { url 'file:///D:/maven_repos/' }
-        maven { url 'file:///E:/develop/sonatype-work/nexus/storage/central/' }
+        maven { url localMavenRepo }
         mavenLocal()
-        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        maven { url remoteMavenRepo }
         mavenCentral()
     }
     dependencies {
@@ -22,11 +21,13 @@ group = 'code.ponfee'
 version = '1.0-SNAPSHOT'
 sourceCompatibility = 1.8
 
+def localMavenRepo=project.localMavenRepo[1..-2]
+def remoteMavenRepo=project.remoteMavenRepo[1..-2]
+
 repositories {
-    //maven { url 'file:///D:/maven_repos/' }
-    maven { url 'file:///E:/develop/sonatype-work/nexus/storage/central/' }
+    maven { url localMavenRepo }
     mavenLocal()
-    maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+    maven { url remoteMavenRepo }
     mavenCentral()
 }
 
@@ -92,8 +93,7 @@ sourceSets {
 uploadArchives {
     repositories {
         mavenDeployer {
-            //repository(url: 'file:///D:/maven_repos/')
-            repository(url: 'file:///E:/develop/sonatype-work/nexus/storage/central/')
+            repository(url: localMavenRepo)
             // 构造项目的Pom文件
             pom.project {
                 name = project.name
