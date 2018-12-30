@@ -8,8 +8,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -79,7 +81,7 @@ public class RedisManagerController {
         } 
     }
 
-    @PostMapping("put")
+    @PutMapping("set")
     public Result<Void> addOrUpdateRedisEntry(
         @RequestParam("key") String key, 
         @RequestParam("value") String value, 
@@ -94,7 +96,7 @@ public class RedisManagerController {
         return Result.success();
     }
 
-    @PostMapping("delete")
+    @DeleteMapping("delete")
     public Result<Void> delete(@RequestBody String... keys) {
         service.delete(keys);
         return Result.success();
@@ -130,35 +132,35 @@ public class RedisManagerController {
 
     private String buildFoot() {
         return new StringBuilder(HtmlExporter.HORIZON)
-            .append("<form method=\"POST\" name=\"delete\">")
+            .append("<form method=\"DELETE\" name=\"delete\">")
             .append("<input type=\"text\" name=\"key\" />")
             .append("<input type=\"button\" onclick=\"delKey()\" value=\"delete\" />")
             .append("</form><br/>\n")
 
             .append(HtmlExporter.HORIZON)
-            .append("<form method=\"POST\" name=\"put\">")
+            .append("<form method=\"PUT\" name=\"set\">")
             .append("<select name=\"dataType\">")
-            .append("<option value=\"string\">string</option>")
-            .append("<option value=\"list\">list</option>")
-            .append("<option value=\"set\">set</option>")
-            .append("<option value=\"zset\">zset</option>")
-            .append("<option value=\"hash\">hash</option>")
+            .append("  <option value=\"string\">string</option>")
+            .append("  <option value=\"list\">list</option>")
+            .append("  <option value=\"set\">set</option>")
+            .append("  <option value=\"zset\">zset</option>")
+            .append("  <option value=\"hash\">hash</option>")
             .append("</select>")
             .append("<input type=\"text\" name=\"key\" /> &nbsp;&nbsp;&nbsp;")
             .append("<select name=\"valueType\">")
-            .append("<option value=\"raw\">raw</option>")
-            .append("<option value=\"b64\">b64</option>")
+            .append("  <option value=\"raw\">raw</option>")
+            .append("  <option value=\"b64\">b64</option>")
             .append("</select>")
             .append("<input type=\"text\" name=\"value\" /> &nbsp;&nbsp;&nbsp;")
             .append("expire:<input type=\"text\" name=\"expire\" /> &nbsp;&nbsp;&nbsp;")
-            .append("<input type=\"button\" onclick=\"putKey()\" value=\"put\" />")
+            .append("<input type=\"button\" onclick=\"setKey()\" value=\"set\" />")
             .append("</form><br/>\n")
             .append(HtmlExporter.HORIZON)
 
             .append("\n<script>\n")
 
             .append("function delKey(){")
-            .append("$.ajax({url:'"+contextPath+"/redis/mgr/delete',type:'POST',dataType:'json',contentType:'application/json;charset=utf-8',")
+            .append("$.ajax({url:'"+contextPath+"/redis/mgr/delete',type:'DELETE',dataType:'json',contentType:'application/json;charset=utf-8',")
             .append("data:JSON.stringify([$(\"form[name='delete'] input[name='key']\").val()]),success:function(result){alert(result.msg)}});")
             .append("}\n")
 
@@ -166,13 +168,13 @@ public class RedisManagerController {
             .append("$.ajax({url:'"+contextPath+"/redis/mgr/refresh',type:'POST',success:function(result){alert(result.msg)}});")
             .append("}\n")
 
-            .append("function putKey(){")
-            .append("$.ajax({url:'"+contextPath+"/redis/mgr/put',type:'POST',dataType:'json',data:{")
-            .append("key:$(\"form[name='put'] input[name='key']\").val(),")
-            .append("value:$(\"form[name='put'] input[name='value']\").val(),")
-            .append("expire:$(\"form[name='put'] input[name='expire']\").val(),")
-            .append("dataType:$(\"form[name='put'] select[name='dataType']\").val(),")
-            .append("valueType:$(\"form[name='put'] select[name='valueType']\").val()")
+            .append("function setKey(){")
+            .append("$.ajax({url:'"+contextPath+"/redis/mgr/set',type:'PUT',dataType:'json',data:{")
+            .append("key:$(\"form[name='set'] input[name='key']\").val(),")
+            .append("value:$(\"form[name='set'] input[name='value']\").val(),")
+            .append("expire:$(\"form[name='set'] input[name='expire']\").val(),")
+            .append("dataType:$(\"form[name='set'] select[name='dataType']\").val(),")
+            .append("valueType:$(\"form[name='set'] select[name='valueType']\").val()")
             .append("},success:function(result){alert(result.msg)}});")
             .append("}\n")
 
