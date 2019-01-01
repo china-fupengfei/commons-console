@@ -1,10 +1,19 @@
 spring.datasource:
+
+  #primary.url: jdbc:mysql://112.74.170.75:3306/spy_schedule_job?useUnicode=true&characterEncoding=UTF-8
+  primary.url: jdbc:log4jdbc:mysql://112.74.170.75:3306/spy_schedule_job?useUnicode=true&characterEncoding=UTF-8
+  primary.username: root
+  primary.password: 
+
+  #secondary.url: jdbc:mysql://127.0.0.1:3306/cas?useUnicode=true&characterEncoding=UTF-8
+  secondary.url: jdbc:log4jdbc:mysql://127.0.0.1:3306/cms?useUnicode=true&characterEncoding=UTF-8
+  secondary.username: root
+  secondary.password: mysql
+
+
+  default: primary
   #driver-class-name: com.mysql.cj.jdbc.Driver
-  #url: jdbc:mysql://112.74.170.75:3306/spy_schedule_job?useUnicode=true&characterEncoding=UTF-8
   driver-class-name: net.sf.log4jdbc.DriverSpy
-  url: jdbc:log4jdbc:mysql://112.74.170.75:3306/spy_schedule_job?useUnicode=true&characterEncoding=UTF-8
-  username: root
-  password: 
   type: com.alibaba.druid.pool.DruidDataSource # 使用druid数据源
   maxActive: 20                                # 连接池的配置信息
   initialSize: 5

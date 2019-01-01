@@ -1,14 +1,10 @@
 package code.ponfee.console.database;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,13 +12,13 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import code.ponfee.commons.collect.Collects;
+import code.ponfee.commons.data.MultipleDataSourceContext;
 import code.ponfee.commons.export.HtmlExporter;
 import code.ponfee.commons.export.Table;
 import code.ponfee.commons.export.Thead;
@@ -34,7 +30,6 @@ import code.ponfee.commons.model.Page;
 import code.ponfee.commons.model.PageRequestParams;
 import code.ponfee.commons.model.PaginationHtmlBuilder;
 import code.ponfee.commons.model.Result;
-import code.ponfee.commons.resource.ResourceLoaderFacade;
 import code.ponfee.commons.web.WebUtils;
 
 /**
@@ -49,21 +44,6 @@ public class DatabaseQueryController {
     private @Value("${web.context.path:}") String contextPath;
 
     private @Resource DatabaseQueryService service;
-
-    private final List<String> dataSourceNames;
-
-    public DatabaseQueryController() throws IOException {
-        Properties conf = new Properties();
-        conf.load(ResourceLoaderFacade.getResource("application-jdbc.yml").getStream());
-        Pattern pattern = Pattern.compile("^(.+)\\.jdbc\\.url$");
-        conf.put("default.jdbc.url", "default.jdbc.url");
-        dataSourceNames = conf.keySet().stream().map(key -> {
-            Matcher matcher = pattern.matcher(key.toString().trim());
-            return matcher.find() ? matcher.group(1) : null;
-        }).filter(
-            StringUtils::isNotBlank
-        ).distinct().collect(Collectors.toList());
-    }
 
     @GetMapping("page")
     public Result<Page<Object[]>> query4page(PageRequestParams params) {
@@ -116,7 +96,7 @@ public class DatabaseQueryController {
     private String buildForm(PageRequestParams params) {
         StringBuilder builder = new StringBuilder(2048)
             .append("<select name=\"datasource\">\n");
-        for (String datasource : dataSourceNames) {
+        for (String datasource : MultipleDataSourceContext.getDataSourceKeys()) {
             builder.append("<option value=\"").append(datasource).append("\"")
                    .append(datasource(params.getString("datasource"), datasource))
                    .append(">").append(datasource).append("</option>\n");

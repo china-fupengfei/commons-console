@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.PageHelper;
 
+import code.ponfee.commons.data.MultipleDataSourceContext;
 import code.ponfee.commons.model.Page;
 import code.ponfee.commons.model.PageRequestParams;
 import code.ponfee.commons.mybatis.SqlMapper;
@@ -36,13 +37,13 @@ public class DatabaseQueryServiceImpl implements DatabaseQueryService {
         PageHelper.startPage(params.getPageNum(), params.getPageSize());
         try {
             if (StringUtils.isNotBlank(datasource = params.getString("datasource"))) {
-                MultipleDataSourceHolder.set(datasource);
+                MultipleDataSourceContext.set(datasource);
             }
 
             List<?> list = sqlMapper.selectList(sql, LinkedHashMap.class);
             return Page.of((List<LinkedHashMap<String, Object>>) list);
         } finally {
-            MultipleDataSourceHolder.remove();
+            MultipleDataSourceContext.remove();
         }
     }
 
