@@ -137,7 +137,6 @@ public class RedisManagerServiceImpl implements RedisManagerService {
     }
 
     @Override
-    @SuppressWarnings("unlikely-arg-type")
     public void addOrUpdateRedisEntry(String key, String value, Long expire, 
                                       String dataType, String valueType) {
         Object value0 = parseValue(value, valueType);
@@ -173,7 +172,7 @@ public class RedisManagerServiceImpl implements RedisManagerService {
             default:
                 throw new UnsupportedOperationException("Unsupported redis type: " + type.name());
         }
-        keys.remove(key);
+        keys.remove(new RedisKey(key, type, expire0));
         keys.add(new RedisKey(key, type, expire0));
     }
 
@@ -305,11 +304,11 @@ public class RedisManagerServiceImpl implements RedisManagerService {
         }
     }
 
-    public static enum MatchMode {
-        LIKE, HEAD, TAIL, EQUAL;
+    public enum MatchMode {
+        LIKE, HEAD, TAIL, EQUAL
     }
 
-    private static enum ValueType {
+    private enum ValueType {
         RAW, //
         B64() {
             public @Override Object parse(String value) {

@@ -1,5 +1,6 @@
 package code.ponfee.console.redis;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.connection.DataType;
 
 /**
@@ -70,8 +71,8 @@ public class RedisKey implements java.io.Serializable, Comparable<Object> {
     public boolean equals(Object o) {
         if (o instanceof RedisKey) {
             return this.getKey().equals(((RedisKey) o).getKey());
-        } else if (o instanceof String) {
-            return this.getKey().equals((String) o);
+        } else if (o instanceof CharSequence) {
+            return StringUtils.equals(this.getKey(), (CharSequence) o);
         } else {
             return false;
         }
