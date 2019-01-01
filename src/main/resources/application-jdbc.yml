@@ -14,7 +14,6 @@ spring.datasource:
   default: primary
   #driver-class-name: com.mysql.cj.jdbc.Driver
   driver-class-name: net.sf.log4jdbc.DriverSpy
-  type: com.alibaba.druid.pool.DruidDataSource # 使用druid数据源
   maxActive: 20                                # 连接池的配置信息
   initialSize: 5
   minIdle: 5

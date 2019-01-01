@@ -42,7 +42,6 @@ import code.ponfee.commons.web.WebUtils;
 public class DatabaseQueryController {
 
     private @Value("${web.context.path:}") String contextPath;
-
     private @Resource DatabaseQueryService service;
 
     @GetMapping("page")
