@@ -172,8 +172,9 @@ public class RedisManagerServiceImpl implements RedisManagerService {
             default:
                 throw new UnsupportedOperationException("Unsupported redis type: " + type.name());
         }
-        keys.remove(new RedisKey(key, type, expire0));
-        keys.add(new RedisKey(key, type, expire0));
+        RedisKey redisKey = new RedisKey(key, type, expire0);
+        keys.remove(redisKey);
+        keys.add(redisKey);
     }
 
     @Override
@@ -182,8 +183,9 @@ public class RedisManagerServiceImpl implements RedisManagerService {
         if (ArrayUtils.isEmpty(redisKeys)) {
             return ;
         }
-        redis.delete(Arrays.asList(redisKeys));
-        keys.removeAll(Arrays.asList(redisKeys));
+        List<String> list = Arrays.asList(redisKeys);
+        redis.delete(list);
+        keys.removeAll(list);
     }
 
     @Override

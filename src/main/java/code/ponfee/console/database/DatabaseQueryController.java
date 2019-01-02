@@ -52,16 +52,16 @@ public class DatabaseQueryController {
     }
 
     // Oracle: select table_name from tabs
-    //  Mysql: select table_name from  INFORMATION_SCHEMA.TABLES
+    //  Mysql: select table_name from INFORMATION_SCHEMA.TABLES
     @GetMapping("view")
     public void query4view(PageRequestParams params, HttpServletResponse resp) {
         Page<LinkedHashMap<String, Object>> page;
-        String comment = null;
+        String errorMsg = null;
         try {
             page = service.query4page(params);
         } catch (Exception e) {
             page = Page.empty();
-            comment = e.getMessage();
+            errorMsg = e.getMessage();
         }
         Stream<String> head = CollectionUtils.isEmpty(page.getRows()) 
                             ? Arrays.stream(new String[] { "无查询结果" })
@@ -73,7 +73,7 @@ public class DatabaseQueryController {
         )).collect(Collectors.toList());
 
         Table table = new Table(heads);
-        table.setComment(comment);
+        table.setComment(errorMsg);
         page.process(row -> table.addRow(Collects.map2array(row)));
         table.end();
 
