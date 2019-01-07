@@ -51,8 +51,11 @@ public class DataSourceConfig {
         PropertySourcesLoader propertiesLoader = new PropertySourcesLoader();
         PropertySource<?> source = propertiesLoader.load(new ClassPathResource("application-jdbc.yml"));
         Properties jdbcConfig = new Properties();
-        ((Map<String, String>) source.getSource()).entrySet().stream().filter(e -> Objects.nonNull(e.getKey())
-            && e.getKey().startsWith(PREFIX)).forEach(e -> jdbcConfig.put(e.getKey().substring(PREFIX.length() + 1), e.getValue()));
+        ((Map<String, String>) source.getSource()).entrySet().stream().filter(
+            e -> Objects.nonNull(e.getKey()) && e.getKey().startsWith(PREFIX)
+        ).forEach(
+            e -> jdbcConfig.put(e.getKey().substring(PREFIX.length() + 1), e.getValue())
+        );
         /*PropertiesLoaderUtils.fillProperties(
             jdbcConfig, 
             new EncodedResource(new ClassPathResource("application-jdbc.yml"))
