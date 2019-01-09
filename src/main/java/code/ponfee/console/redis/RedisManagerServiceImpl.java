@@ -38,6 +38,7 @@ import code.ponfee.commons.concurrent.MultithreadExecutor;
 import code.ponfee.commons.model.Page;
 import code.ponfee.commons.model.PageBoundsResolver;
 import code.ponfee.commons.model.PageBoundsResolver.PageBounds;
+import code.ponfee.commons.model.PageHandler;
 import code.ponfee.commons.model.PageRequestParams;
 import code.ponfee.commons.util.Bytes;
 import code.ponfee.commons.util.Enums;
@@ -126,10 +127,10 @@ public class RedisManagerServiceImpl implements RedisManagerService {
             (int) bounds.getOffset(), (int) bounds.getOffset() + bounds.getLimit()
         );
         com.github.pagehelper.Page<RedisKey> page = new com.github.pagehelper.Page<>(
-            (int) bounds.getOffset() / params.getPageSize() + 1, params.getPageSize()
+            PageHandler.computePageNum(bounds.getOffset(), params.getPageSize()), params.getPageSize()
         );
         page.addAll(data);
-        page.setPages((int) (bounds.getTotal() + params.getPageSize() - 1) / params.getPageSize());
+        page.setPages(PageHandler.computeTotalPages(bounds.getTotal(), params.getPageSize()));
         page.setTotal(bounds.getTotal());
         page.setStartRow((int) bounds.getOffset());
         page.setEndRow((int) bounds.getOffset() + bounds.getLimit());
