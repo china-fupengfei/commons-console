@@ -241,7 +241,7 @@ public class RedisManagerServiceImpl implements RedisManagerService {
             lastRefreshTime = System.currentTimeMillis();
             logger.info("Redis manager refresh key cost time: {}", watch.stop());
         } catch (Throwable e) {
-            logger.info("Redis manager load key occur erryr", e);
+            logger.info("Redis manager load key occur error.", e);
         } finally {
             LOCK.unlock();
         }
