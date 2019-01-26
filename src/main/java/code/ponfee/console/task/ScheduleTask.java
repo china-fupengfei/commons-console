@@ -19,13 +19,13 @@ public class ScheduleTask {
 
     //@Scheduled(cron = "0/2 * * * * ?")
     public void test1() {
-        System.out.println("任务1：执行");
+        System.out.println("task start");
         try {
             Thread.sleep(3000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println("任务1：执行完成");
+        System.out.println("task end");
     }
 
 }
